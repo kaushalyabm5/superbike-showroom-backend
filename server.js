@@ -130,3 +130,29 @@ app.post('/api/sales', (req, res) => {
         });
     });
 });
+
+
+// 6. Get all sales history with customer and bike details (GET)
+app.get('/api/sales', (req, res) => {
+    const query = `
+        SELECT 
+            sales.sale_id,
+            sales.sale_date,
+            customers.name AS customer_name,
+            customers.phone AS customer_phone,
+            bikes.brand,
+            bikes.model,
+            bikes.price
+        FROM sales
+        JOIN customers ON sales.customer_id = customers.customer_id
+        JOIN bikes ON sales.bike_id = bikes.bike_id
+        ORDER BY sales.sale_date DESC
+    `;
+
+    db.query(query, (err, results) => {
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+        res.json(results);
+    });
+});
