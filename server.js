@@ -27,7 +27,7 @@ db.connect((err) => {
 
 // --- API ROUTES ---
 
-// 1. සියලුම බයික්ස් ලබා ගැනීමේ API එක (GET)
+// 1. API for get all bikes (GET)
 app.get('/api/bikes', (req, res) => {
     const query = 'SELECT * FROM bikes';
     db.query(query, (err, results) => {
@@ -38,7 +38,7 @@ app.get('/api/bikes', (req, res) => {
     });
 });
 
-// 2. අලුත් බයික් එකක් ඇතුළත් කිරීමේ API එක (POST)
+// 2. API for add new bike (POST)
 app.post('/api/bikes', (req, res) => {
     const { brand, model, price, stock } = req.body;
     const query = 'INSERT INTO bikes (brand, model, price, stock) VALUES (?, ?, ?, ?)';
@@ -51,7 +51,44 @@ app.post('/api/bikes', (req, res) => {
     });
 });
 
-// සර්වර් එක ස්ටාර්ට් කිරීම
+// start the server
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
+});
+
+
+
+
+// 3. Delete a bike by ID (DELETE)
+app.delete('/api/bikes/:id', (req, res) => {
+    const bikeId = req.params.id;
+    const query = 'DELETE FROM bikes WHERE bike_id = ?';
+
+    db.query(query, [bikeId], (err, result) => {
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: 'Bike not found' });
+        }
+        res.json({ message: 'Bike deleted successfully!' });
+    });
+});
+
+
+// 4. Update bike details by ID (PUT)
+app.put('/api/bikes/:id', (req, res) => {
+    const bikeId = req.params.id;
+    const { brand, model, price, stock } = req.body;
+    const query = 'UPDATE bikes SET brand = ?, model = ?, price = ?, stock = ? WHERE bike_id = ?';
+
+    db.query(query, [brand, model, price, stock, bikeId], (err, result) => {
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: 'Bike not found' });
+        }
+        res.json({ message: 'Bike updated successfully!' });
+    });
 });
