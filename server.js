@@ -146,8 +146,8 @@ app.get('/api/sales', (req, res) => {
         FROM sales
         JOIN customers ON sales.customer_id = customers.customer_id
         JOIN bikes ON sales.bike_id = bikes.bike_id
-        ORDER BY sales.sale_date DESC
-    `;
+        ORDER BY sales.sale_id ASC
+    `; // <-- මෙහි DESC වෙනුවට ASC දැමීමෙන් 1, 2, 3 ලෙස පිළිවෙළට ගත හැක. (DESC යෙදුවහොත් අලුත්ම එක උඩින්ම පෙන්වයි)
 
     db.query(query, (err, results) => {
         if (err) {
