@@ -156,3 +156,28 @@ app.get('/api/sales', (req, res) => {
         res.json(results);
     });
 });
+
+// 7. Get showroom statistics and dashboard metrics (GET)
+app.get('/api/stats', (req, res) => {
+    const statsQuery = `
+        SELECT 
+            (SELECT COUNT(*) FROM bikes) AS total_models,
+            (SELECT SUM(stock) FROM bikes) AS total_stock,
+            (SELECT COUNT(*) FROM sales) AS total_sold,
+            (SELECT SUM(bikes.price) FROM sales JOIN bikes ON sales.bike_id = bikes.bike_id) AS total_revenue
+    `;
+
+    db.query(statsQuery, (err, results) => {
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+        
+        const data = results[0];
+        res.json({
+            total_models: data.total_models || 0,
+            total_stock: data.total_stock || 0,
+            total_sold: data.total_sold || 0,
+            total_revenue: data.total_revenue || 0
+        });
+    });
+});
