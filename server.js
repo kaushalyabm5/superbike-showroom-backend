@@ -92,3 +92,41 @@ app.put('/api/bikes/:id', (req, res) => {
         res.json({ message: 'Bike updated successfully!' });
     });
 });
+
+
+
+// 5. Record a bike sale, add customer, and reduce stock (POST)
+app.post('/api/sales', (req, res) => {
+    const { bike_id, name, phone, email } = req.body;
+
+    if (!bike_id || !name || !phone) {
+        return res.status(400).json({ error: 'Bike ID, customer name, and phone are required.' });
+    }
+
+    // Step 1: Insert customer details into customers table
+    const customerQuery = 'INSERT INTO customers (name, phone, email) VALUES (?, ?, ?)';
+    db.query(customerQuery, [name, phone, email || ''], (err, customerResult) => {
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+        const customer_id = customerResult.insertId;
+
+        // Step 2: Record the sale in sales table
+        const saleDate = new Date().toISOString().slice(0, 10);
+        const saleQuery = 'INSERT INTO sales (bike_id, customer_id, sale_date) VALUES (?, ?, ?)';
+        db.query(saleQuery, [bike_id, customer_id, saleDate], (err, saleResult) => {
+            if (err) {
+                return res.status(500).json({ error: err.message });
+            }
+
+            // Step 3: Decrease the stock of the bike by 1
+            const updateStockQuery = 'UPDATE bikes SET stock = stock - 1 WHERE bike_id = ?';
+            db.query(updateStockQuery, [bike_id], (err, updateResult) => {
+                if (err) {
+                    return res.status(500).json({ error: err.message });
+                }
+                res.json({ message: 'Bike purchased successfully and stock updated!' });
+            });
+        });
+    });
+});
